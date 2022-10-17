@@ -49,10 +49,10 @@ def get_normed_spectrum_and_line_positions():
     #spectrum_normed = spectrum/baseline_iasls
     #label_normed = 'normed spectrum (iasls)'
     spectrum_normed = spectrum/baseline_imodpoly
-    label_normed = 'normed spectrum (test)'
-    plt.plot(freq, spectrum_normed, '-', label=label_normed)
-    plt.legend()
-    plt.show()
+    #label_normed = 'normed spectrum (test)'
+    #plt.plot(freq, spectrum_normed, '-', label=label_normed)
+    #plt.legend()
+    #plt.show()
 
     # spectral lines
     bspline = spi.splrep(freq, spectrum_normed, k=4)
