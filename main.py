@@ -7,9 +7,9 @@ import etalon
 import readdata
 import fit
 
-#(spectrum_normed, line_positions) = baseline.get_normed_spectrum_and_line_positions()
-(alpha, beta, gamma, param)  = etalon.get_coeffs()
-coeffs = (alpha, beta, gamma, param)
+(spectrum_normed, line_positions) = baseline.get_normed_spectrum_and_line_positions()
+#(alpha, beta, gamma, param)  = etalon.get_coeffs()
+#coeffs = (alpha, beta, gamma, param)
 hitran_lines = readdata.get_hitran_lines()
 line_pos_part = list()
 hitran_line_part = list()
@@ -19,7 +19,7 @@ hitran_line_part = list()
 for a in [0, 1, 2, 3, 4, 5]:
     line_pos_part.append(line_positions[a])
     hitran_line_part.append(hitran_lines[a])
-freq_array = fit.get_freq_array(line_pos_part, hitran_line_part, coeffs, len(spectrum_normed))
+freq_array = fit.get_freq_array(line_pos_part, hitran_line_part, len(spectrum_normed))
 #linearized_freq_scale = fit.get_lin_freq_scale(line_pos_part, hitran_line_part, len(spectrum_normed)
 # plot
 #plt.plot(freq_array, spectrum_normed, '-', label='spectrum_normed')
