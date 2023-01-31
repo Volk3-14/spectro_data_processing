@@ -5,7 +5,7 @@ import scipy.interpolate as spi
 import numpy as np
 import matplotlib.pyplot as plt
 import etalon
-import const
+import config
 
 # fit experimental data
 # with function freq = alpha*x**2p + beta*x + gamma
@@ -43,6 +43,10 @@ def fit_data(maxes, freq_cm, param_array):
         RMSE_array.append(RMSE)
         #print("alpha, beta, gamma, param, RMSE = ", alpha, beta, gamma, param, RMSE)
 
+    # plot
+    plt.plot(param_array, RMSE_array, 'o', label='RMSE(p)')
+    plt.legend()
+    plt.show()
 
     # take extremum from spline by derivative
     bspline = spi.splrep(param_array ,RMSE_array, k=4)
@@ -71,12 +75,6 @@ def fit_data(maxes, freq_cm, param_array):
     print("param = ", param, "    RMSE = ", RMSE)
     print("alpha, beta, gamma = ", alpha, beta, gamma)
 
-
-    # plot
-    plt.plot(param_array, RMSE_array, 'o', label='RMSE(p)')
-    plt.legend()
-    plt.show()
-
     # return list of coefficients
     return (alpha, beta, gamma, param, RMSE)
 
@@ -92,30 +90,41 @@ def calc_fit(alpha, beta, gamma, param, x):
 #
 # get array of frequencies in cm^(-1)
 # for spectrum (with <length> points)
-def get_freq_array(lines, hitran_lines, length):
+def get_lin_freq_scale(lines, hitran_lines, length):
+
     # get etalon maxes
     maxes = etalon.get_etalon_maxes()
-    # get array wirh frequencies of etalon in cm^(-1)
+    # get array with frequencies of etalon in cm^(-1)
     length_maxima = len(maxes)
-    freq_cm = const.etalon_const*np.arange(0, length_maxima, 1)
+    freq_cm = config.etalon_const*np.arange(0, length_maxima, 1)
+
     # get fitting function
-    (alpha, beta, gamma, param, RMSE) = fit_data(maxes, freq_cm, const.param_array)
+    #(alpha, beta, gamma, param, RMSE) = fit_data(maxes, freq_cm, const.param_array)
+    # it is more convenient to fit function in such view
+    # but in real life function is different: y -> y_max - y
+    freq_cm = max(freq_cm) - freq_cm
+    bspline = spi.splrep(maxes ,freq_cm, k=3)
+    #alpha = - alpha
+    #beta = - beta
+    #gamma = freq_cm[length_maxima-1] - gamma
+
     # solve linear system
     matrix = list()
     for i in range(len(lines)):
-        f = calc_fit(alpha, beta, gamma, param, lines[i])
+        #f = calc_fit(alpha, beta, gamma, param, lines[i])
+        f = spi.splev(lines[i], bspline, der=0, ext=0)
         matrix.append(list())
         for j in range(len(lines)):
             matrix[i].append(f**j)
     coeff_array = np.linalg.solve(matrix, hitran_lines)
-    #print('matrix = ', matrix)
     print('coeff_array = ', coeff_array)
 
     # calculate frequency array
     numbers = np.arange(float(length))
     freq_array = np.zeros_like(numbers)
     for i in range(length):
-        f = calc_fit(alpha, beta, gamma, param, numbers[i])
+        #f = calc_fit(alpha, beta, gamma, param, numbers[i])
+        f = spi.splev(numbers[i], bspline, der=0, ext=0)
         for j in range(len(lines)):
             freq_array[i] += coeff_array[j]*(f**j)
 
@@ -125,12 +134,25 @@ def get_freq_array(lines, hitran_lines, length):
     x = [maxes[0], maxes[length_maxima-1]]
     plt.plot(x, y, '-', label='straight line')
     z = np.arange(min(maxes), max(maxes), 1)
-    fit = alpha*z**(2*param) + beta*z + gamma
+    #fit = alpha*z**(2*param) + beta*z + gamma
+    fit = spi.splev(z, bspline, der=0, ext=0)
     plt.plot(z, fit, '-', label='fit')
     plt.legend()
     plt.show()
+    # first derivative
+    fit_der1 = spi.splev(z, bspline, der=1, ext=0)
+    plt.plot(z, fit_der1, '-', label='fit derivative 1')
+    plt.legend()
+    plt.show()
+    # second derivative
+    #fit_der2 = spi.splev(z, bspline, der=2, ext=0)
+    #plt.plot(z, fit_der2, '-', label='fit derivative 2')
+    #plt.legend()
+    #plt.show()
+    # residual
     maxes = np.array(maxes)
-    fit2 = alpha*maxes**(2*param) + beta*maxes + gamma
+    #fit2 = alpha*maxes**(2*param) + beta*maxes + gamma
+    fit2 = spi.splev(maxes, bspline, der=0, ext=0)
     plt.plot(maxes, freq_cm-fit2, 'o', label='etalon points - fit')
     plt.legend()
     plt.show()
