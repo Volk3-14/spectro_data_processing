@@ -27,10 +27,10 @@ def get_normed_spectrum_and_line_positions(spectrum):
     spectrum_reverse = constant_array - spectrum
 
     # interpolate
-    baseline_reverse = pbl.polynomial.imodpoly(spectrum_reverse, freq, poly_order=12, tol=1e-6, max_iter=250, use_original=True)[0]
+    baseline_reverse = pbl.polynomial.imodpoly(spectrum_reverse, freq, poly_order=3, tol=1e-6, max_iter=250, use_original=True)[0]
     baseline_imodpoly = constant_array - baseline_reverse
     #baseline_model_spectrum = (np.sum(spectrum)/len(spectrum))*np.ones_like(spectrum)
-    #baseline_reverse = pbl.polynomial.quant_reg(spectrum_reverse, freq, poly_order=8, quantile=0.05)[0]
+    #baseline_reverse = pbl.polynomial.quant_reg(spectrum_reverse, freq, poly_order=5, quantile=0.05)[0]
     #baseline_quantreg = constant_array - baseline_reverse
     #baseline_reverse = pbl.whittaker.iasls(spectrum_reverse, freq, lam=1e5, p=1e-4, lam_1=1e-4)[0]
     #baseline_iasls = constant_array - baseline_reverse
@@ -66,8 +66,8 @@ def get_normed_spectrum_and_line_positions(spectrum):
     # spectral lines
     bspline = spi.splrep(freq, spectrum_normed, k=4)
     bspline_der1 = spi.splder(bspline, n=1)
-    minimax = spi.sproot(bspline_der1, mest=1800)
-    threshold = 0.01             # min depth of spectral lines
+    minimax = spi.sproot(bspline_der1, mest=10000)
+    threshold = 0.002             # min depth of spectral lines
     spectral_lines = list()
     for i in range(len(minimax)):
         if abs(spi.splev(minimax[i], bspline) - 1) > threshold:

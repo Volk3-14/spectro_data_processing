@@ -11,20 +11,7 @@ import config
 
 def get_etalon_maxes():
 # get maxes from etalon data fit
-    #import fit
-    #data = open("etalon/20220722_161044.Ch_B.000.dat", "r")
-    #data = open("etalon/20220722_161044.Ch_B.001.dat", "r")
-    #data = open("etalon/3762-3766_F-P.dat", "r")
-    #data = open("etalon/20221101_194836.Ch_A.000.dat")
-    #lines = data.readlines()
-    #length = len(lines)
-    #spectrum = list()
-
-    # spectrum with all points
-    #for i in range(length):
-    #    spectrum.append(int(lines[i]))
     spectrum = np.array(readdata.get_spectrum(config.file_etalon))
-    #spectrum = np.array(spectrum)
     length = len(spectrum)
     freq = np.arange(0, length, 1)
     constant = np.ones(length)*3e6

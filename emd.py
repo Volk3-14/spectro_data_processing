@@ -3,13 +3,13 @@
 import numpy as np
 import scipy.interpolate as spi
 import matplotlib.pyplot as plt
-from PyEMD import EMD
+from pyemd import emd
 import readdata
 import config
 
 def make_emd(spectrum):
     # empirical mode decomposition
-    emd = EMD()
+    emd = emd()
     Emfs = emd(spectrum)
 
     # correlation coefficient
