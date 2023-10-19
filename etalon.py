@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import math
 import scipy.interpolate as spi
 import numpy as np
@@ -34,21 +32,26 @@ def get_etalon_maxes():
     minimax = spi.sproot(bspline_der1, mest=350)
     maxes = list()
     threshold = (np.amax(spectrum_normed) - np.amin(spectrum_normed))/2
+    dist = len(spectrum_normed)/len(minimax)
+    #print("dist = "+str(dist))
     for i in range(len(minimax)):
         if abs(spi.splev(minimax[i], bspline) - 1) < threshold:
             maxes.append(minimax[i]/1.0)
+        if len(maxes) > 1 and abs(maxes[-1] - maxes[-2]) < dist:
+            maxes[-2] = 0.5*(maxes[-1]+maxes[-2])
+            del maxes[-1]
     #del(maxes[0:4])
 
     # plot
-    #plt.plot(freq, spectrum, 'o', label='raw spectrum')
-    #plt.plot(freq, baseline, '-', label='baseline')
-    #plt.legend()
-    #plt.show()
-    #plt.plot(freq, spectrum_normed, 'o', label='normed spectrum')
-    #plt.plot(freq_new, spectrum_interpolated, 'g-', label='interpolated')
-    #plt.plot(maxes, spi.splev(maxes, bspline), 'o', label='maxes')
-    #plt.legend()
-    #plt.show()
+    plt.plot(freq, spectrum, 'o', label='raw spectrum')
+    plt.plot(freq, baseline, '-', label='baseline')
+    plt.legend()
+    plt.show()
+    plt.plot(freq, spectrum_normed, 'o', label='normed spectrum')
+    plt.plot(freq_new, spectrum_interpolated, 'g-', label='interpolated')
+    plt.plot(maxes, spi.splev(maxes, bspline), 'o', label='maxes')
+    plt.legend()
+    plt.show()
 
     # return etalon max positions
     return maxes

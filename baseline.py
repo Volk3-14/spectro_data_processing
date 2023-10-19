@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pybaselines as pbl
@@ -67,7 +65,7 @@ def get_normed_spectrum_and_line_positions(spectrum):
     bspline = spi.splrep(freq, spectrum_normed, k=4)
     bspline_der1 = spi.splder(bspline, n=1)
     minimax = spi.sproot(bspline_der1, mest=10000)
-    threshold = 0.002             # min depth of spectral lines
+    threshold = 0.0015             # min depth of spectral lines
     spectral_lines = list()
     for i in range(len(minimax)):
         if abs(spi.splev(minimax[i], bspline) - 1) > threshold:

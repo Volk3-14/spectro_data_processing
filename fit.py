@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import math
 import scipy.interpolate as spi
 import numpy as np
@@ -72,8 +70,8 @@ def fit_data(maxes, freq_cm, param_array):
     RMSE = 0.0
     for i in range(length_maxes):
         RMSE += (freq_cm[i] - alpha*maxes[i]**(2*param) - beta*maxes[i] - gamma)**2
-    print("param = ", param, "    RMSE = ", RMSE)
-    print("alpha, beta, gamma = ", alpha, beta, gamma)
+    #print("param = ", param, "    RMSE = ", RMSE)
+    #print("alpha, beta, gamma = ", alpha, beta, gamma)
 
     # return list of coefficients
     return (alpha, beta, gamma, param, RMSE)
@@ -116,8 +114,21 @@ def get_lin_freq_scale(lines, hitran_lines, length):
         matrix.append(list())
         for j in range(len(lines)):
             matrix[i].append(f**j)
+    #################################
+    # let's do a costyyl
+    #while len(lines) < len(hitran_lines):
+    #    diff = list()
+    #    for i in range(len(hitran_lines)-1):
+    #        diff.append(hitran_lines[i] - hitran_lines[i+1])
+    #print(matrix)
+    #print(hitran_lines)
+    #################################
     coeff_array = np.linalg.solve(matrix, hitran_lines)
-    print('coeff_array = ', coeff_array)
+    #print('coeff_array = ', coeff_array)
+    if len(coeff_array) == 1:
+        coeff_array = np.append(coeff_array, 1.0)
+        coeff_array[0] -= spi.splev(lines[0], bspline, der=0, ext=0)
+    #print('coeff_array = ', coeff_array)
 
     # calculate frequency array
     numbers = np.arange(float(length))
@@ -125,25 +136,26 @@ def get_lin_freq_scale(lines, hitran_lines, length):
     for i in range(length):
         #f = calc_fit(alpha, beta, gamma, param, numbers[i])
         f = spi.splev(numbers[i], bspline, der=0, ext=0)
-        for j in range(len(lines)):
+        for j in range(len(coeff_array)):
             freq_array[i] += coeff_array[j]*(f**j)
 
     # plot
-    plt.plot(maxes, freq_cm, 'o', label='frequency, cm^(-1)')
+    #print("maxes = " + str(maxes))
+    #plt.plot(maxes, freq_cm, 'o', label='frequency, cm^(-1)')
     y = [freq_cm[0], freq_cm[len(freq_cm)-1]]
     x = [maxes[0], maxes[length_maxima-1]]
-    plt.plot(x, y, '-', label='straight line')
+    #plt.plot(x, y, '-', label='straight line')
     z = np.arange(min(maxes), max(maxes), 1)
-    #fit = alpha*z**(2*param) + beta*z + gamma
+    ###fit = alpha*z**(2*param) + beta*z + gamma
     fit = spi.splev(z, bspline, der=0, ext=0)
-    plt.plot(z, fit, '-', label='fit')
-    plt.legend()
-    plt.show()
+    #plt.plot(z, fit, '-', label='fit')
+    #plt.legend()
+    #plt.show()
     # first derivative
     fit_der1 = spi.splev(z, bspline, der=1, ext=0)
-    plt.plot(z, fit_der1, '-', label='fit derivative 1')
-    plt.legend()
-    plt.show()
+    #plt.plot(z, fit_der1, '-', label='fit derivative 1')
+    #plt.legend()
+    #plt.show()
     # second derivative
     #fit_der2 = spi.splev(z, bspline, der=2, ext=0)
     #plt.plot(z, fit_der2, '-', label='fit derivative 2')
@@ -153,13 +165,13 @@ def get_lin_freq_scale(lines, hitran_lines, length):
     maxes = np.array(maxes)
     #fit2 = alpha*maxes**(2*param) + beta*maxes + gamma
     fit2 = spi.splev(maxes, bspline, der=0, ext=0)
-    plt.plot(maxes, freq_cm-fit2, 'o', label='etalon points - fit')
-    plt.legend()
-    plt.show()
+    #plt.plot(maxes, freq_cm-fit2, 'o', label='etalon points - fit')
+    #plt.legend()
+    #plt.show()
 
-    plt.plot(numbers, freq_array, '-', label='fitted function')
-    plt.plot(lines, hitran_lines, 'o', label='exp data (+hitran)')
-    plt.legend()
-    plt.show()
+    #plt.plot(numbers, freq_array, '-', label='fitted function')
+    #plt.plot(lines, hitran_lines, 'o', label='exp data (+hitran)')
+    #plt.legend()
+    #plt.show()
 
     return freq_array
