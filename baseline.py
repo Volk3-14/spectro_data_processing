@@ -57,7 +57,7 @@ def get_normed_spectrum_and_line_positions(spectrum):
     #label_normed = 'normed spectrum (iasls)'
     spectrum_normed = spectrum/baseline
     label_normed = 'normed spectrum'
-    plt.plot(freq, spectrum_normed, '-', label=label_normed)
+    plt.plot(freq, spectrum_normed, '-', linewidth=4, label=label_normed)
     plt.legend()
     plt.show()
 

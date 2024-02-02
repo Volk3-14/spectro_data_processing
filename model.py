@@ -6,38 +6,44 @@ import const
 import config
 
 
-# shape function for spectral line
-def shape_function(main_freq, freq_scale):
+# gaussian shape function for spectral line
+def gauss(main_freq, freq_scale):
     # freq_scale - array with frequencies
     # main_freq - frequency of line center
     # line shape - numpy array with values of shape function
 
     # gaussian function
     alfa_doppler = main_freq/const.c*np.sqrt(2*const.Na*const.k*const.ln2*config.temp/config.mol_mass)
-    #print(alfa_doppler)
     line_shape = (np.sqrt(const.ln2/const.pi)/alfa_doppler)*np.exp( -const.ln2*((freq_scale-main_freq)/alfa_doppler)**2)
     return line_shape
 
 
+# lorentz shape function for spectral line
+def lorentz(data, a, freq_scale):
+    # freq_scale - numpy array with frequencies
+    # data - hitran data with line parameters
+    # {'freq': [], 'intensity': [], 'gamma_air': [], ... }
+    # a - number of line in dataset
+
+    # lorentzian function
+    gamma = ((const.temp_ref/config.temp)**data['n_air'][a]) \
+            *(data['gamma_air'][a]*(config.press - config.press_self)+data['gamma_self'][a]*config.press_self)
+    line_shape = gamma/const.pi/(gamma**2+(freq_scale-data['freq'][a])**2)
+    return line_shape
+
+
 # function to model absorption lines
-def model_spectrum(line_freq, line_S, freq_scale):
-    # line_freq - array with line frequencies (HITRAN)
-    # line_S - array with line intensities (HITRAN)
-    # freq_scale - linearized freq scale (experiment)
-    # returns synthetic spectrum
+def model_spectrum(hitran_data, freq_scale):
+    # hitran_data - dictionary with several parameters (HITRAN)
+    # freq_scale - linearized freq scale (experiment) (numpy array)
+    # returns synthetic spectrum (numpy array)
 
-    # parameters from hitran
-    # coefficient of pressure shift
-    delta = [0.001]
-    # coefficient of pressure broadening in air
-    gamma_air = []
-    # coefficient of pressure self-broadening
-    gamma_self = []
-
+    freq_scale  = np.array(freq_scale)
     modeled_spectrum = 0
-    for a in range(len(line_freq)):
-        modeled_spectrum += line_S[a]*shape_function(line_freq[a], freq_scale)
-    return modeled_spectrum
+    for a in range(len(hitran_data['freq'])):
+        #modeled_spectrum += hitran_data['intensity'][a]*gauss(hitran_data['freq'][a], freq_scale)
+        modeled_spectrum += hitran_data['intensity'][a]*lorentz(hitran_data, a, freq_scale)
+    return np.array(modeled_spectrum)
 
 
 

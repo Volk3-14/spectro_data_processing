@@ -107,6 +107,7 @@ def get_lin_freq_scale(lines, hitran_lines, length):
     #gamma = freq_cm[length_maxima-1] - gamma
 
     # solve linear system
+    #########################
     matrix = list()
     for i in range(len(lines)):
         #f = calc_fit(alpha, beta, gamma, param, lines[i])
@@ -114,16 +115,21 @@ def get_lin_freq_scale(lines, hitran_lines, length):
         matrix.append(list())
         for j in range(len(lines)):
             matrix[i].append(f**j)
-    #################################
-    # let's do a costyyl
-    #while len(lines) < len(hitran_lines):
-    #    diff = list()
-    #    for i in range(len(hitran_lines)-1):
-    #        diff.append(hitran_lines[i] - hitran_lines[i+1])
-    #print(matrix)
-    #print(hitran_lines)
-    #################################
-    coeff_array = np.linalg.solve(matrix, hitran_lines)
+
+    # check if there are more hitran lines, than experimental
+    # delete the weakest lines
+    while len(lines) < len(hitran_lines['freq']):
+        minimum = hitran_lines['maxes'][0]
+        index_min = 0
+        for i in range(1, len(hitran_lines['freq'])):
+            if hitran_lines['maxes'][i] < minimum:
+                minimum = hitran_lines['maxes'][i]
+                index_min = i
+        hitran_lines['freq'] = np.delete(hitran_lines['freq'], index_min)
+        hitran_lines['maxes'] = np.delete(hitran_lines['maxes'], index_min)
+        #print(hitran_lines)
+
+    coeff_array = np.linalg.solve(matrix, hitran_lines['freq'])
     #print('coeff_array = ', coeff_array)
     if len(coeff_array) == 1:
         coeff_array = np.append(coeff_array, 1.0)

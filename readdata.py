@@ -21,10 +21,13 @@ def get_spectrum(filename):
 def get_hitran_parameters(filename):
     inf = open(filename, "r")
     strings = inf.readlines()
-    hitran = {'freq':[], 'intensity':[], 'shift':[]}
+    hitran = {'freq':[], 'intensity':[], 'gamma_air':[], 'gamma_self':[], 'n_air':[], 'shift':[]}
     for string in strings:
         hitran['freq'].append(float(string.split()[2]))
         hitran['intensity'].append(float(string.split()[3]))
+        hitran['gamma_air'].append(float(string.split()[4]))
+        hitran['gamma_self'].append(float(string.split()[5]))
+        hitran['n_air'].append(float(string.split()[6]))
         hitran['shift'].append(float(string.split()[7]))
     inf.close()
     return hitran
@@ -41,7 +44,7 @@ def get_hitran_lines(hitran):
     N = 4000                               # number of points
     step = (freq_max-freq_min)/N
     freq_scale = np.arange(freq_min, freq_max, step)
-    modeled_spectrum = model.model_spectrum(hitran['freq'], hitran['intensity'], freq_scale)
+    modeled_spectrum = model.model_spectrum(hitran, freq_scale)
     bspline = spi.splrep(freq_scale, modeled_spectrum, k=3)
     spectrum_der1 = spi.splev(freq_scale, bspline, der=1)
     bspline_der1 = spi.splrep(freq_scale, spectrum_der1, k=3)
@@ -65,8 +68,10 @@ def get_hitran_lines(hitran):
             minimums.append(i)
     hitran_lines = np.delete(hitran_lines, minimums)
 
-    plt.plot(freq_scale, modeled_spectrum)
-    plt.plot(freq_scale, spectrum_der1)
-    plt.plot(hitran_lines, np.zeros_like(hitran_lines), 'o')
-    plt.show()
-    return hitran_lines
+    #plt.plot(freq_scale, modeled_spectrum)
+    #plt.plot(freq_scale, spectrum_der1)
+    #plt.plot(hitran_lines, np.zeros_like(hitran_lines), 'o')
+    #plt.show()
+    # maximum points of absorption spectrum
+    hitran_maxes = spi.splev(hitran_lines, bspline)
+    return {'freq': hitran_lines, 'maxes': hitran_maxes}

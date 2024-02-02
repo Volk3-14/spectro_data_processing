@@ -10,3 +10,9 @@ k = 1.380649e-16
 ln2 = 0.6931471805599453
 # pi
 pi = 3.141592653589793
+# reference temperature [K]
+temp_ref = 296
+# reference pressure [atm]
+press_ref = 1.0
+# in din/cm^2
+press_ref_sgs = 1013250
